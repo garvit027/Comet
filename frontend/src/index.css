@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color: #0f172a; background: #F4F6FA; }
+body { margin: 0; background: #F4F6FA; font-family: Inter, "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; }
+.tabular-nums { font-variant-numeric: tabular-nums; }
