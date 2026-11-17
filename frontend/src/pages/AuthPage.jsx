@@ -46,7 +46,6 @@ export default function AuthPage({ mode: initialMode = "login" }) {
     } finally { setLoading(false); }
   };
 
-
   return (
     <div className="min-h-screen flex bg-canvas">
       <div className="hidden lg:flex w-[45%] bg-midnight text-white p-10 flex-col justify-between">

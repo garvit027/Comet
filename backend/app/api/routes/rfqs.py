@@ -12,10 +12,8 @@ from app.services.auction_engine import log_event
 
 router = APIRouter(prefix="/rfqs", tags=["rfqs"])
 
-
 def _gen_ref() -> str:
   return f"RFQ-{uuid.uuid4().hex[:6].upper()}"
-
 
 @router.post("", response_model=RFQOut)
 def create_rfq(payload: RFQCreate, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
@@ -57,14 +55,13 @@ def create_rfq(payload: RFQCreate, db: Session = Depends(get_db), user: User = D
   db.refresh(rfq)
   return rfq
 
-
 @router.get("")
 def list_rfqs(status: str | None = None, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
   q = select(RFQ)
   if user.role == UserRole.AUCTIONEER:
     q = q.where(RFQ.auctioneer_id == user.id)
   else:
-    # bidders see published/active/closed eligible auctions (available auctions)
+                                                                                
     q = q.where(RFQ.status.in_([RFQStatus.PUBLISHED, RFQStatus.ACTIVE, RFQStatus.CLOSED]))
   if status:
     q = q.where(RFQ.status == RFQStatus(status))
@@ -96,7 +93,6 @@ def list_rfqs(status: str | None = None, db: Session = Depends(get_db), user: Us
     })
   return result
 
-
 @router.get("/{rfq_id}")
 def get_rfq(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
   rfq = db.get(RFQ, rfq_id)
@@ -107,7 +103,6 @@ def get_rfq(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depen
   if user.role == UserRole.AUCTIONEER and rfq.auctioneer_id != user.id:
     raise HTTPException(status_code=403, detail="Not your RFQ")
   return rfq
-
 
 @router.put("/{rfq_id}", response_model=RFQOut)
 def update_rfq(rfq_id: uuid.UUID, payload: RFQUpdate, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
@@ -131,7 +126,6 @@ def update_rfq(rfq_id: uuid.UUID, payload: RFQUpdate, db: Session = Depends(get_
   db.commit()
   db.refresh(rfq)
   return rfq
-
 
 @router.post("/{rfq_id}/publish", response_model=RFQOut)
 def publish_rfq(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):

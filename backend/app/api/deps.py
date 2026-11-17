@@ -9,7 +9,6 @@ from app.models import User, UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
   credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -27,12 +26,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     raise credentials_exception
   return user
 
-
 def require_auctioneer(user: User = Depends(get_current_user)) -> User:
   if user.role != UserRole.AUCTIONEER:
     raise HTTPException(status_code=403, detail="Auctioneer access required")
   return user
-
 
 def require_bidder(user: User = Depends(get_current_user)) -> User:
   if user.role != UserRole.BIDDER:

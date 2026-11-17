@@ -6,14 +6,14 @@ from app.core.config import settings
 from app.core.db import engine, Base
 from app.api.routes import auth, rfqs, auctions, evaluation, bidder, dashboard
 
-# Create tables for MVP convenience and migrate away removed legacy columns
+                                                                           
 try:
   Base.metadata.create_all(bind=engine)
   with engine.connect() as conn:
     conn.execute(text("ALTER TABLE users ALTER COLUMN approval_status DROP NOT NULL;"))
     conn.execute(text("ALTER TABLE users DROP COLUMN IF EXISTS approval_status;"))
     conn.commit()
-except Exception as exc:  # pragma: no cover - logged by the runtime
+except Exception as exc:                                            
   print(f"Schema initialization/migration notice: {exc}")
 
 app = FastAPI(title="Comet API", version="0.1.0")
@@ -33,7 +33,6 @@ app.include_router(auctions.router, prefix="/api")
 app.include_router(evaluation.router, prefix="/api")
 app.include_router(bidder.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
-
 
 @app.get("/health")
 @app.get("/api/health")

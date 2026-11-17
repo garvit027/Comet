@@ -8,7 +8,6 @@ from app.models import RFQ, RFQStatus, AuctionConfig, AuctionStatus, Bid, BidHis
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
-
 @router.get("/auctioneer")
 def auctioneer_dashboard(db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
   rfqs = db.query(RFQ).filter(RFQ.auctioneer_id == user.id).all()
@@ -39,7 +38,7 @@ def auctioneer_dashboard(db: Session = Depends(get_db), user: User = Depends(req
       "participating_suppliers": len(bids),
     })
 
-  # recent activity across my rfqs
+                                  
   rfq_ids = [r.id for r in rfqs]
   recent = []
   if rfq_ids:
@@ -56,7 +55,6 @@ def auctioneer_dashboard(db: Session = Depends(get_db), user: User = Depends(req
     "auctions": auctions,
     "recent_activity": recent,
   }
-
 
 @router.get("/bidder")
 def bidder_dashboard(db: Session = Depends(get_db), user: User = Depends(require_bidder)):

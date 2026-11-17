@@ -15,10 +15,8 @@ from app.services.auction_engine import compute_rankings, log_event
 
 router = APIRouter(tags=["evaluation"])
 
-
 def _gen_po() -> str:
   return f"PO-{uuid.uuid4().hex[:8].upper()}"
-
 
 @router.get("/auctions/{rfq_id}/evaluation")
 def evaluation_data(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
@@ -51,7 +49,6 @@ def evaluation_data(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User
       "average_rating": round(avg_rating, 2) if avg_rating else None,
     })
   return {"rfq_id": str(rfq_id), "reference_id": rfq.reference_id, "title": rfq.title, "suppliers": rows}
-
 
 @router.post("/auctions/{rfq_id}/award")
 def award_contract(rfq_id: uuid.UUID, payload: AwardCreate, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
@@ -88,7 +85,6 @@ def award_contract(rfq_id: uuid.UUID, payload: AwardCreate, db: Session = Depend
   db.commit()
   return {"award_id": str(award.id), "po_number": po.po_number, "po_status": po.status.value}
 
-
 @router.get("/purchase-orders")
 def list_pos(db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
   pos = db.query(PurchaseOrder).join(ContractAward).join(RFQ).filter(RFQ.auctioneer_id == user.id).order_by(PurchaseOrder.issued_at.desc()).all()
@@ -113,7 +109,6 @@ def list_pos(db: Session = Depends(get_db), user: User = Depends(require_auction
     })
   return result
 
-
 @router.post("/purchase-orders/{po_id}/status")
 def update_po_status(po_id: uuid.UUID, status: POStatus, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
   po = db.get(PurchaseOrder, po_id)
@@ -127,7 +122,6 @@ def update_po_status(po_id: uuid.UUID, status: POStatus, db: Session = Depends(g
     po.completed_at = datetime.now(timezone.utc)
   db.commit()
   return {"status": po.status.value}
-
 
 @router.post("/purchase-orders/{po_id}/review")
 def create_review(po_id: uuid.UUID, payload: ReviewCreate, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
@@ -153,7 +147,6 @@ def create_review(po_id: uuid.UUID, payload: ReviewCreate, db: Session = Depends
   db.commit()
   return {"status": "ok"}
 
-
 @router.get("/suppliers")
 def list_suppliers(db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
   suppliers = db.query(SupplierProfile).all()
@@ -175,7 +168,6 @@ def list_suppliers(db: Session = Depends(get_db), user: User = Depends(require_a
       "average_rating": round(avg, 2) if avg else None,
     })
   return result
-
 
 @router.get("/suppliers/{supplier_id}")
 def supplier_detail(supplier_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):

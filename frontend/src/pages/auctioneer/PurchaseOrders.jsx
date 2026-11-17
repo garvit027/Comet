@@ -3,7 +3,7 @@ import { api, formatINR } from "../../api/client";
 
 export default function PurchaseOrders() {
   const [pos, setPos] = useState([]);
-  const [rating, setRating] = useState({}); // poId -> {rating,text,open}
+  const [rating, setRating] = useState({});
   const load = () => api.get("/purchase-orders").then(r=>setPos(r.data)).catch(()=>{});
   useEffect(()=>{ load(); }, []);
 

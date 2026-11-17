@@ -20,20 +20,17 @@ from app.ws.manager import manager
 
 router = APIRouter(prefix="/auctions", tags=["auctions"])
 
-
 def _get_supplier(user: User, db: Session) -> SupplierProfile:
   prof = db.query(SupplierProfile).filter(SupplierProfile.user_id == user.id).first()
   if not prof:
     raise HTTPException(status_code=400, detail="Supplier profile not found")
   return prof
 
-
 def _rfq_or_404(db: Session, rfq_id: uuid.UUID) -> RFQ:
   rfq = db.get(RFQ, rfq_id)
   if not rfq:
     raise HTTPException(status_code=404, detail="RFQ not found")
   return rfq
-
 
 @router.get("/{rfq_id}/state")
 def auction_state(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
@@ -44,7 +41,7 @@ def auction_state(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User =
   if not config:
     raise HTTPException(status_code=400, detail="Auction not configured")
 
-  # opportunistic status sync
+                             
   activate_if_due(db, rfq, config)
   db.commit()
   db.refresh(rfq)
@@ -59,7 +56,7 @@ def auction_state(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User =
   total_bids = db.query(func.count(BidHistory.id)).filter(BidHistory.rfq_id == rfq_id).scalar() or 0
   current_l1 = min([b.total_bid_amount for b in bids], default=None)
   initial_best = db.query(func.max(BidHistory.total_bid_amount)).filter(BidHistory.rfq_id == rfq_id).scalar()
-  # better initial: first bid amount overall
+                                            
   first_hist = db.query(BidHistory).filter(BidHistory.rfq_id == rfq_id).order_by(asc(BidHistory.created_at)).first()
   initial_best_quote = first_hist.total_bid_amount if first_hist else None
   savings_amount = (initial_best_quote - current_l1) if (initial_best_quote is not None and current_l1 is not None) else None
@@ -125,7 +122,6 @@ def auction_state(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User =
     "my_bid": my_bid,
   }
 
-
 @router.post("/{rfq_id}/bids")
 async def submit_bid(rfq_id: uuid.UUID, payload: BidSubmit, db: Session = Depends(get_db), user: User = Depends(require_bidder)):
   supplier = _get_supplier(user, db)
@@ -136,7 +132,7 @@ async def submit_bid(rfq_id: uuid.UUID, payload: BidSubmit, db: Session = Depend
     db.rollback()
     raise
 
-  # broadcast events
+                    
   await manager.broadcast(str(rfq_id), {"type": "BID_PLACED", "rfq_id": str(rfq_id)})
   if result.get("extension"):
     ext = result["extension"]
@@ -146,13 +142,12 @@ async def submit_bid(rfq_id: uuid.UUID, payload: BidSubmit, db: Session = Depend
       "reason": ext["reason"],
       "new_closing_time": _ensure_aware(ext["new_closing_time"]).isoformat(),
     })
-  # closure may happen inside engine? check state
+                                                 
   rfq = db.get(RFQ, rfq_id)
   if rfq and rfq.auction_config and rfq.auction_config.status == AuctionStatus.CLOSED:
     await manager.broadcast(str(rfq_id), {"type": "AUCTION_CLOSED", "rfq_id": str(rfq_id)})
 
   return {"status": "ok", "rank": result["rank"], "revision_number": result["revision_number"]}
-
 
 @router.get("/{rfq_id}/my-bids")
 def my_bid_history(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(require_bidder)):
@@ -169,7 +164,6 @@ def my_bid_history(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User 
     "transit_time": r.transit_time,
     "quote_validity_days": r.quote_validity_days,
   } for r in rows]
-
 
 @router.get("/{rfq_id}/all-bids")
 def all_bids(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
@@ -192,7 +186,6 @@ def all_bids(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depe
     "transit_time": r.transit_time,
   } for r in rows]
 
-
 @router.get("/{rfq_id}/activity")
 def activity(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
   rfq = _rfq_or_404(db, rfq_id)
@@ -202,7 +195,7 @@ def activity(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depe
   result = []
   for l in logs:
     msg = l.message
-    # hide competitor identity from bidders in messages (best effort for MVP)
+                                                                             
     if user.role == UserRole.BIDDER and l.event_type == "BID_PLACED":
       msg = "New bid placed — leaderboard updated"
     result.append({
@@ -212,7 +205,6 @@ def activity(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depe
       "created_at": l.created_at.isoformat(),
     })
   return result
-
 
 @router.get("/{rfq_id}/extensions")
 def extensions(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
@@ -228,7 +220,6 @@ def extensions(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = De
     "triggered_by": e.triggered_by,
     "created_at": e.created_at.isoformat(),
   } for e in rows]
-
 
 @router.post("/{rfq_id}/extend-manual")
 async def extend_manual(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
@@ -250,7 +241,6 @@ async def extend_manual(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: 
   await manager.broadcast(str(rfq_id), {"type": "AUCTION_EXTENDED", "rfq_id": str(rfq_id), "reason": "Manual extension", "new_closing_time": new_close.isoformat()})
   return {"new_closing_time": new_close.isoformat()}
 
-
 @router.post("/{rfq_id}/force-close")
 async def force_close(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
   rfq = _rfq_or_404(db, rfq_id)
@@ -261,7 +251,6 @@ async def force_close(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: Us
   db.commit()
   await manager.broadcast(str(rfq_id), {"type": "AUCTION_CLOSED", "rfq_id": str(rfq_id)})
   return {"status": "closed"}
-
 
 @router.post("/{rfq_id}/cancel")
 async def cancel(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(require_auctioneer)):
@@ -275,13 +264,12 @@ async def cancel(rfq_id: uuid.UUID, db: Session = Depends(get_db), user: User = 
   await manager.broadcast(str(rfq_id), {"type": "AUCTION_CLOSED", "rfq_id": str(rfq_id), "cancelled": True})
   return {"status": "cancelled"}
 
-
 @router.websocket("/ws/{rfq_id}")
 async def auction_ws(websocket: WebSocket, rfq_id: str):
   await manager.connect(rfq_id, websocket)
   try:
     while True:
-      # keepalive / ignore client messages
+                                          
       await websocket.receive_text()
   except WebSocketDisconnect:
     manager.disconnect(rfq_id, websocket)

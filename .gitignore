@@ -1,64 +1,45 @@
-# ───────────────────────────────────────────
-# Python / FastAPI backend
-# ───────────────────────────────────────────
 __pycache__/
 **/__pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 
-# Virtual environments
 venv/
 .venv/
 env/
 backend/venv/
 backend/.venv/
 
-# Env files & secrets
 .env
 .env.*
 *.pem
 *.key
 *.crt
 
-# Build / dist
 *.egg-info/
 dist/
 build/
 
-# Test / lint caches
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 htmlcov/
 .coverage
 
-# ───────────────────────────────────────────
-# Node / React / Vite frontend
-# ───────────────────────────────────────────
 node_modules/
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
 
-# ───────────────────────────────────────────
-# Database / local data
-# ───────────────────────────────────────────
 postgres_data/
 *.sqlite3
 *.db
 
-# ───────────────────────────────────────────
-# macOS
-# ───────────────────────────────────────────
 .DS_Store
 .AppleDouble
 .LSOverride
 Thumbs.db
 
-# ───────────────────────────────────────────
-# IDEs & editors
-# ───────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
@@ -66,9 +47,6 @@ Thumbs.db
 *.suo
 *.iml
 
-# ───────────────────────────────────────────
-# Logs & misc
-# ───────────────────────────────────────────
 *.log
 *.pid
 *.bak

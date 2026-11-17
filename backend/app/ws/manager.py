@@ -4,7 +4,6 @@ from typing import Any
 
 from fastapi import WebSocket
 
-
 class ConnectionManager:
   def __init__(self):
     self.active: dict[str, list[WebSocket]] = defaultdict(list)
@@ -26,6 +25,5 @@ class ConnectionManager:
         await ws.send_text(data)
       except Exception:
         self.disconnect(auction_id, ws)
-
 
 manager = ConnectionManager()

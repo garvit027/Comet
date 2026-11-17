@@ -12,11 +12,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
 
-
 class UserRole(str, enum.Enum):
   AUCTIONEER = "AUCTIONEER"
   BIDDER = "BIDDER"
-
 
 class RFQStatus(str, enum.Enum):
   DRAFT = "DRAFT"
@@ -25,25 +23,21 @@ class RFQStatus(str, enum.Enum):
   CLOSED = "CLOSED"
   CANCELLED = "CANCELLED"
 
-
 class AuctionStatus(str, enum.Enum):
   SCHEDULED = "SCHEDULED"
   ACTIVE = "ACTIVE"
   CLOSED = "CLOSED"
   CANCELLED = "CANCELLED"
 
-
 class ExtensionTriggerType(str, enum.Enum):
   ANY_BID = "ANY_BID"
   RANK_CHANGE = "RANK_CHANGE"
   L1_CHANGE = "L1_CHANGE"
 
-
 class POStatus(str, enum.Enum):
   ISSUED = "ISSUED"
   IN_TRANSIT = "IN_TRANSIT"
   COMPLETED = "COMPLETED"
-
 
 class User(Base):
   __tablename__ = "users"
@@ -59,7 +53,6 @@ class User(Base):
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   supplier_profile: Mapped["SupplierProfile"] = relationship(back_populates="user", uselist=False)
-
 
 class SupplierProfile(Base):
   __tablename__ = "supplier_profiles"
@@ -79,7 +72,6 @@ class SupplierProfile(Base):
   bids: Mapped[list["Bid"]] = relationship(back_populates="supplier")
   reviews: Mapped[list["SupplierReview"]] = relationship(back_populates="supplier")
   awards: Mapped[list["ContractAward"]] = relationship(back_populates="supplier")
-
 
 class RFQ(Base):
   __tablename__ = "rfqs"
@@ -106,7 +98,6 @@ class RFQ(Base):
   logs: Mapped[list["AuctionActivityLog"]] = relationship(back_populates="rfq")
   award: Mapped["ContractAward"] = relationship(back_populates="rfq", uselist=False)
 
-
 class AuctionConfig(Base):
   __tablename__ = "auction_configurations"
 
@@ -123,7 +114,6 @@ class AuctionConfig(Base):
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   rfq: Mapped["RFQ"] = relationship(back_populates="auction_config")
-
 
 class Bid(Base):
   __tablename__ = "bids"
@@ -148,7 +138,6 @@ class Bid(Base):
   rfq: Mapped["RFQ"] = relationship(back_populates="bids")
   supplier: Mapped["SupplierProfile"] = relationship(back_populates="bids")
 
-
 class BidHistory(Base):
   __tablename__ = "bid_history"
   __table_args__ = (Index("ix_bid_history_rfq_created", "rfq_id", "created_at"),)
@@ -166,7 +155,6 @@ class BidHistory(Base):
   rank_at_time: Mapped[int | None] = mapped_column(Integer)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-
 class AuctionExtension(Base):
   __tablename__ = "auction_extensions"
 
@@ -175,11 +163,10 @@ class AuctionExtension(Base):
   old_closing_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
   new_closing_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
   reason: Mapped[str] = mapped_column(Text, nullable=False)
-  triggered_by: Mapped[str] = mapped_column(String(50), default="SYSTEM")  # SYSTEM or AUCTIONEER
+  triggered_by: Mapped[str] = mapped_column(String(50), default="SYSTEM")                        
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   rfq: Mapped["RFQ"] = relationship(back_populates="extensions")
-
 
 class AuctionActivityLog(Base):
   __tablename__ = "auction_activity_logs"
@@ -189,11 +176,10 @@ class AuctionActivityLog(Base):
   rfq_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("rfqs.id", ondelete="CASCADE"), index=True)
   event_type: Mapped[str] = mapped_column(String(100), nullable=False)
   message: Mapped[str] = mapped_column(Text, nullable=False)
-  metadata_json: Mapped[str | None] = mapped_column(Text)  # JSON string for extra details
+  metadata_json: Mapped[str | None] = mapped_column(Text)                                 
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   rfq: Mapped["RFQ"] = relationship(back_populates="logs")
-
 
 class ContractAward(Base):
   __tablename__ = "contract_awards"
@@ -212,7 +198,6 @@ class ContractAward(Base):
   purchase_order: Mapped["PurchaseOrder"] = relationship(back_populates="award", uselist=False)
   review: Mapped["SupplierReview"] = relationship(back_populates="award", uselist=False)
 
-
 class PurchaseOrder(Base):
   __tablename__ = "purchase_orders"
 
@@ -225,7 +210,6 @@ class PurchaseOrder(Base):
 
   award: Mapped["ContractAward"] = relationship(back_populates="purchase_order")
 
-
 class SupplierReview(Base):
   __tablename__ = "supplier_reviews"
   __table_args__ = (UniqueConstraint("award_id", name="uq_review_award"),)
@@ -234,7 +218,7 @@ class SupplierReview(Base):
   supplier_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("supplier_profiles.id"), index=True)
   award_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("contract_awards.id", ondelete="CASCADE"))
   reviewer_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
-  rating: Mapped[int] = mapped_column(Integer, nullable=False)  # 1-5
+  rating: Mapped[int] = mapped_column(Integer, nullable=False)       
   review_text: Mapped[str | None] = mapped_column(Text)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

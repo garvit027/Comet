@@ -29,7 +29,7 @@ export default function Landing() {
     <div className="min-h-screen bg-canvas">
       <PublicNav />
 
-      {/* Hero */}
+      {}
       <section className="bg-midnight text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(79,70,229,0.35),transparent_45%)]" />
         <div className="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center relative">
@@ -54,7 +54,7 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Feature highlights */}
+          {}
           <div className="flex flex-col gap-3">
             {FEATURES.map((f) => (
               <div
@@ -72,7 +72,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 3-step lifecycle */}
+      {}
       <section id="how" className="bg-canvas py-16">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">3-Step Auction Lifecycle</h2>
@@ -92,7 +92,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Rules */}
+      {}
       <section id="rules" className="pb-16 bg-canvas">
         <div className="max-w-5xl mx-auto px-6">
           <div className="bg-white rounded-2xl border border-border shadow-card p-6">

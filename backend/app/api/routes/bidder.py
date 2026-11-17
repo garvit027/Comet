@@ -9,13 +9,11 @@ from app.schemas.schemas import SupplierProfileUpdate
 
 router = APIRouter(prefix="/bidder", tags=["bidder"])
 
-
 def _get_supplier(user: User, db: Session) -> SupplierProfile:
   prof = db.query(SupplierProfile).filter(SupplierProfile.user_id == user.id).first()
   if not prof:
     raise HTTPException(status_code=400, detail="Supplier profile not found")
   return prof
-
 
 @router.get("/profile")
 def get_profile(db: Session = Depends(get_db), user: User = Depends(require_bidder)):
@@ -39,7 +37,6 @@ def get_profile(db: Session = Depends(get_db), user: User = Depends(require_bidd
     "average_rating": round(avg, 2) if avg else None,
   }
 
-
 @router.put("/profile")
 def update_profile(payload: SupplierProfileUpdate, db: Session = Depends(get_db), user: User = Depends(require_bidder)):
   s = _get_supplier(user, db)
@@ -49,13 +46,12 @@ def update_profile(payload: SupplierProfileUpdate, db: Session = Depends(get_db)
   db.refresh(s)
   return {"status": "ok"}
 
-
 @router.get("/bid-history")
 def all_my_bid_history(db: Session = Depends(get_db), user: User = Depends(require_bidder)):
   s = _get_supplier(user, db)
   rows = db.query(BidHistory).filter(BidHistory.supplier_id == s.id).order_by(BidHistory.created_at.desc()).all()
   rfq_map = {r.id: r for r in db.query(RFQ).all()}
-  # outcome per rfq
+                   
   awards = {a.rfq_id: a for a in db.query(ContractAward).all()}
   result = []
   seen_rfqs = set()
@@ -80,7 +76,6 @@ def all_my_bid_history(db: Session = Depends(get_db), user: User = Depends(requi
     })
   return result
 
-
 @router.get("/notifications")
 def notifications(db: Session = Depends(get_db), user: User = Depends(require_bidder)):
   """Contextual notifications for a bidder, derived from real auction events.
@@ -100,7 +95,7 @@ def notifications(db: Session = Depends(get_db), user: User = Depends(require_bi
   for log in logs:
     rfq = rfq_map.get(log.rfq_id)
     message = log.message
-    # anonymize competitor-facing bid/award messages
+                                                    
     if log.event_type in ("BID_PLACED", "CONTRACT_AWARDED"):
       if log.event_type == "CONTRACT_AWARDED":
         message = f"An award decision was recorded for {rfq.reference_id}" if rfq else "An award decision was recorded"
@@ -115,7 +110,6 @@ def notifications(db: Session = Depends(get_db), user: User = Depends(require_bi
     })
   return result
 
-
 @router.get("/my-auctions")
 def my_auctions(db: Session = Depends(get_db), user: User = Depends(require_bidder)):
   s = _get_supplier(user, db)
@@ -127,7 +121,7 @@ def my_auctions(db: Session = Depends(get_db), user: User = Depends(require_bidd
   result = []
   for rfq in rfqs:
     my_bid = next((b for b in bids if b.rfq_id == rfq.id), None)
-    # compute rank
+                  
     all_bids = db.query(Bid).filter(Bid.rfq_id == rfq.id).order_by(Bid.total_bid_amount.asc()).all()
     rank = next((i+1 for i, b in enumerate(all_bids) if b.supplier_id == s.id), None)
     l1 = all_bids[0].total_bid_amount if all_bids else None

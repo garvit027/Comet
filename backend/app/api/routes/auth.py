@@ -12,7 +12,6 @@ from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-
 @router.post("/register", response_model=UserOut)
 def register(payload: UserCreate, db: Session = Depends(get_db)):
   existing = db.query(User).filter(User.email == payload.email).first()
@@ -70,7 +69,6 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
   db.refresh(user)
   return user
 
-
 @router.post("/login", response_model=Token)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
   user = db.query(User).filter(User.email == payload.email).first()
@@ -88,7 +86,6 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     full_name=user.full_name,
     company_name=company_name,
   )
-
 
 @router.get("/me")
 def me(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
