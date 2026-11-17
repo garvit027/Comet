@@ -17,7 +17,6 @@ backend/.venv/
 # Env files & secrets
 .env
 .env.*
-!.env.example
 *.pem
 *.key
 *.crt
