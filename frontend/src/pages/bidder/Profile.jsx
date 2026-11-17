@@ -8,7 +8,7 @@ export default function Profile() {
   useEffect(()=>{ api.get("/bidder/profile").then(r=>{ setProfile(r.data); setForm(r.data); }).catch(()=>{}); }, []);
   const save = async (e) => {
     e.preventDefault();
-    await api.put("/bidder/profile", { company_name: form.company_name, contact_person: form.contact_person, phone_number: form.phone_number, business_category: form.business_category, gstin: form.gstin, fleet_details: form.fleet_details, certifications: form.certifications });
+    await api.put("/bidder/profile", { company_name: form.company_name, contact_person: form.contact_person, phone_number: form.phone_number, business_category: form.business_category, fleet_details: form.fleet_details, certifications: form.certifications });
     setMsg("Profile updated.");
   };
   if (!profile) return <div className="text-slate-500">Loading profile...</div>;
@@ -24,7 +24,7 @@ export default function Profile() {
         {msg && <div className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded p-2">{msg}</div>}
         <div className="grid md:grid-cols-2 gap-4">
           {[
-            ["company_name","Company Name"],["contact_person","Contact Person"],["phone_number","Phone Number"],["business_category","Business/Service Category"],["gstin","GSTIN / Registration Number"]
+            ["company_name","Company Name"],["contact_person","Contact Person"],["phone_number","Phone Number"],["business_category","Business/Service Category"]
           ].map(([k,label])=>(
             <label key={k} className="block"><div className="text-sm text-slate-700 mb-1">{label}</div><input className="w-full border border-border rounded-lg px-3 py-2.5" value={form[k]||""} onChange={e=>setForm({...form,[k]:e.target.value})} /></label>
           ))}

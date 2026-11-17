@@ -7,9 +7,6 @@ DO $$ BEGIN
   CREATE TYPE user_role AS ENUM ('AUCTIONEER', 'BIDDER');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
-  CREATE TYPE approval_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN
   CREATE TYPE rfq_status AS ENUM ('DRAFT', 'PUBLISHED', 'ACTIVE', 'CLOSED', 'CANCELLED');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
@@ -28,7 +25,6 @@ CREATE TABLE IF NOT EXISTS users (
   hashed_password VARCHAR(255) NOT NULL,
   role user_role NOT NULL,
   full_name VARCHAR(255) NOT NULL,
-  approval_status approval_status NOT NULL DEFAULT 'APPROVED',
   organization_name VARCHAR(255),
   department VARCHAR(255),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,

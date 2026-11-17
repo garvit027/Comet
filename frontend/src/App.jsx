@@ -21,7 +21,6 @@ function Protected({ children, role }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-500">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (user.approval_status !== "APPROVED") return <div className="min-h-screen flex items-center justify-center bg-canvas"><div className="bg-white p-8 rounded-2xl border border-border shadow-card text-center max-w-md"><h2 className="text-xl font-semibold mb-2">Pending Admin Approval</h2><p className="text-slate-600">Your Auctioneer account is awaiting approval. Please sign in later with your approved credentials.</p></div></div>;
   if (role && user.role !== role) return <Navigate to={user.role === "AUCTIONEER" ? "/auctioneer/dashboard" : "/bidder/dashboard"} replace />;
   return children;
 }

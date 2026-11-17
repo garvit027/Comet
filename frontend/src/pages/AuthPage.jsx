@@ -7,9 +7,8 @@ export default function AuthPage({ mode: initialMode = "login" }) {
   const [mode, setMode] = useState(initialMode);
   const [params] = useSearchParams();
   const [role, setRole] = useState(params.get("role") === "AUCTIONEER" ? "AUCTIONEER" : "BIDDER");
-  const [form, setForm] = useState({ email: "", password: "", full_name: "", company_name: "", contact_person: "", phone_number: "", business_category: "Freight Transportation", gstin: "", organization_name: "", department: "", approval_code: "", confirm: "" });
+  const [form, setForm] = useState({ email: "", password: "", full_name: "", company_name: "", contact_person: "", phone_number: "", business_category: "Freight Transportation", organization_name: "", department: "", confirm: "" });
   const [error, setError] = useState("");
-  const [pending, setPending] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -25,37 +24,28 @@ export default function AuthPage({ mode: initialMode = "login" }) {
     try {
       if (mode === "login") {
         const user = await login(form.email, form.password);
-        if (user.approval_status !== "APPROVED") { setPending(true); return; }
         navigate(user.role === "AUCTIONEER" ? "/auctioneer/dashboard" : "/bidder/dashboard");
       } else {
         if (form.password !== form.confirm) throw new Error("Passwords do not match");
         const payload = { email: form.email, password: form.password, role, full_name: form.full_name || form.contact_person || "User" };
         if (role === "BIDDER") {
-          Object.assign(payload, { company_name: form.company_name, contact_person: form.contact_person, phone_number: form.phone_number, business_category: form.business_category, gstin: form.gstin });
+          Object.assign(payload, { company_name: form.company_name, contact_person: form.contact_person, phone_number: form.phone_number, business_category: form.business_category });
         } else {
-          Object.assign(payload, { organization_name: form.organization_name, department: form.department, approval_code: form.approval_code || undefined });
+          Object.assign(payload, { organization_name: form.organization_name, department: form.department });
         }
-        const user = await register(payload);
-        if (user.approval_status === "PENDING") { setPending(true); }
-        else { await login(form.email, form.password); navigate(role === "AUCTIONEER" ? "/auctioneer/dashboard" : "/bidder/dashboard"); }
+        await register(payload);
+        await login(form.email, form.password);
+        navigate(role === "AUCTIONEER" ? "/auctioneer/dashboard" : "/bidder/dashboard");
       }
     } catch (err) {
-      setError(err?.response?.data?.detail || err.message || "Something went wrong");
+      const detail = err?.response?.data?.detail;
+      const msg = Array.isArray(detail)
+        ? detail.map(d => `${d.loc?.slice(-1)[0] || 'Field'}: ${d.msg}`).join(", ")
+        : (typeof detail === "string" ? detail : (err.message || "Something went wrong"));
+      setError(msg);
     } finally { setLoading(false); }
   };
 
-  if (pending) {
-    return (
-      <div className="min-h-screen bg-canvas flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl border border-border shadow-card p-8 max-w-md text-center">
-          <div className="mb-4 flex justify-center"><Logo light={false} /></div>
-          <h2 className="text-xl font-semibold mb-2">Pending Admin Approval</h2>
-          <p className="text-slate-600 mb-6">Your Auctioneer account was created and is awaiting admin approval. Once approved, you can sign in with your credentials.</p>
-          <Link to="/login" className="inline-block px-4 py-2 rounded-lg bg-primary text-white">Back to Sign In</Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex bg-canvas">
@@ -68,11 +58,7 @@ export default function AuthPage({ mode: initialMode = "login" }) {
               <li key={t} className="flex items-start gap-3"><span className="mt-0.5 h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">✓</span><span>{t}</span></li>
             ))}
           </ul>
-          <div className="mt-10 bg-white/5 border border-white/10 rounded-2xl p-4">
-            <div className="text-xs text-slate-400 mb-2">Live Auction Preview</div>
-            <div className="flex items-center justify-between text-sm"><span>RFQ #RFQ-1045</span><span className="text-rose-300 font-semibold tabular-nums">08:24</span></div>
-            <div className="text-emerald-300 font-semibold mt-1">L1 ₹ 4,80,000 · ↓12.7%</div>
-          </div>
+
         </div>
         <div className="text-xs text-slate-400">© 2026 Comet</div>
       </div>
@@ -101,10 +87,7 @@ export default function AuthPage({ mode: initialMode = "login" }) {
                 <Input label="Work Email" name="email" type="email" value={form.email} onChange={onChange} required />
                 <Input label="Phone Number" name="phone_number" value={form.phone_number} onChange={onChange} />
               </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Input label="Business/Service Category" name="business_category" value={form.business_category} onChange={onChange} />
-                <Input label="GSTIN / Registration Number" name="gstin" value={form.gstin} onChange={onChange} />
-              </div>
+              <Input label="Business/Service Category" name="business_category" value={form.business_category} onChange={onChange} />
             </>)}
             {mode === "register" && role === "AUCTIONEER" && (<>
               <div className="grid sm:grid-cols-2 gap-4">
@@ -115,7 +98,6 @@ export default function AuthPage({ mode: initialMode = "login" }) {
                 <Input label="Work Email" name="email" type="email" value={form.email} onChange={onChange} required />
                 <Input label="Department" name="department" value={form.department} onChange={onChange} />
               </div>
-              <Input label="Admin Approval Code / Invitation Token" name="approval_code" value={form.approval_code} onChange={onChange} placeholder="Enter code for instant approval (optional)" />
             </>)}
             {mode === "login" && (
               <Input label="Work Email" name="email" type="email" value={form.email} onChange={onChange} required />

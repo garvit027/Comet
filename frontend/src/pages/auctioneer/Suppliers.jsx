@@ -33,7 +33,7 @@ export default function Suppliers() {
             <div className="flex items-center justify-between mb-4"><h2 className="text-xl font-bold">{selected.company_name}</h2><button onClick={()=>setSelected(null)}>✕</button></div>
             <div className="grid grid-cols-2 gap-3 text-sm mb-4">
               <Info k="Contact" v={selected.contact_person} /><Info k="Phone" v={selected.phone_number} />
-              <Info k="Category" v={selected.business_category} /><Info k="GSTIN" v={selected.gstin} />
+              <Info k="Category" v={selected.business_category} />
               <Info k="Awarded" v={selected.awarded_contracts} /><Info k="Completed" v={selected.completed_contracts} />
               <Info k="Deliveries" v={selected.successful_deliveries} /><Info k="Avg Rating" v={selected.average_rating ? `★ ${selected.average_rating}`:"—"} />
             </div>
